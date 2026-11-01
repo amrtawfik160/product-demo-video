@@ -1,0 +1,70 @@
+{
+  "name": "launchpad-demo",
+  "out": "out",
+  "app": {
+    "serve": "app",
+    "url": "/index.html",
+    "ready": { "role": "heading", "name": "What are we launching?" },
+    "viewport": { "width": 1440, "height": 810 },
+    "dpr": 3,
+    "now": "2026-10-14T10:00:00Z",
+    "routes": [{ "match": "**/api/plan", "file": "mock/plan.json" }]
+  },
+  "steps": [
+    { "do": "mark", "mark": "hero" },
+    { "do": "rect", "name": "askBox", "target": "#ask" },
+    { "do": "wait", "s": 0.3 },
+    { "do": "click", "mark": "focus", "target": { "placeholder": "Describe your launch" }, "s": 0.7, "dx": 120 },
+    { "do": "type", "mark": "typing", "text": "Launch the spring release: announce it, demo it, email the beta list." },
+    { "do": "wait", "s": 0.15 },
+    { "do": "click", "mark": "send", "target": { "role": "button", "name": "Plan it" }, "s": 0.45, "settle": 300 },
+    { "do": "wait", "mark": "building", "s": 1.4, "speed": [1, 2] },
+    { "do": "rect", "name": "board", "target": "#tasks" },
+    { "do": "wait", "mark": "landed", "s": 1.6 },
+    { "do": "click", "mark": "check1", "target": { "role": "checkbox", "name": "Write the announcement post" }, "s": 0.5 },
+    { "do": "wait", "s": 0.7 },
+    { "do": "click", "mark": "check2", "target": { "role": "checkbox", "name": "Record a 60 second demo" }, "s": 0.4 },
+    { "do": "wait", "s": 0.9 },
+    { "do": "click", "mark": "templates", "target": { "role": "button", "name": "Templates" }, "s": 0.55 },
+    { "do": "wait", "mark": "drawer", "s": 0.6 },
+    { "do": "rect", "name": "drawerList", "target": "#templates" },
+    { "do": "move", "target": { "role": "button", "name": "Use the Webinar template" }, "s": 0.45, "dy": 24 },
+    { "do": "wheel", "mark": "browse", "total": 380, "s": 0.7 },
+    { "do": "wait", "s": 0.25 },
+    { "do": "wheel", "total": -380, "s": 0.45 },
+    { "do": "click", "mark": "pick", "target": { "role": "button", "name": "Use the Webinar template" }, "s": 0.25, "arc": 0 },
+    { "do": "wait", "mark": "added", "s": 1.6 },
+    { "do": "move", "mark": "park", "target": { "point": [1180, 520] }, "s": 0.5 },
+    { "do": "wait", "mark": "finish", "s": 1.2 }
+  ],
+  "camera": [
+    { "at": 0, "frames": 0, "fit": "askBox", "pad": 1.5 },
+    { "at": "typing", "frames": 50, "fit": "askBox", "pad": 1.35 },
+    { "at": "send:press", "frames": 28, "focus": "full" },
+    { "at": "landed", "frames": 36, "fit": "board", "pad": 1.2 },
+    { "at": ["check1:press", -20], "frames": 26, "fit": "board", "pad": 1.1, "dy": -20 },
+    { "at": ["check2:press", 40], "frames": 28, "fit": "board", "pad": 1.25 },
+    { "at": "templates:press", "frames": 28, "focus": "full" },
+    { "at": ["drawer", 4], "frames": 30, "fit": "drawerList", "pad": 1.05, "dy": -60 },
+    { "at": ["pick:press", 30], "frames": 30, "focus": "full" },
+    { "at": ["finish", -10], "frames": 24, "focus": "full" }
+  ],
+  "captions": [
+    { "text": "Describe the goal in plain words.", "from": ["typing", 6], "to": ["send:press", 10] },
+    { "text": "The plan builds itself.", "from": ["landed", 8], "to": ["check1:press", -30], "y": 0.9 },
+    { "text": "Tick things off as you go.", "from": ["check1:press", -10], "to": ["check2:press", 40] },
+    { "text": "Or start from a template.", "from": ["templates:press", 12], "to": ["pick:press", 20] }
+  ],
+  "style": {
+    "caption": { "size": 38 },
+    "cursor": {}
+  },
+  "end": {
+    "title": "Launchpad",
+    "subtitle": "A sample page. Mock data, real motion.",
+    "logo": "logo.svg"
+  },
+  "audio": {
+    "accents": [{ "mark": "landed", "gain": 0.34 }, { "mark": "@endcard", "gain": 0.4 }]
+  }
+}

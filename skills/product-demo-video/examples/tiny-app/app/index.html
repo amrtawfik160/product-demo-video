@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Launchpad</title>
+<style>
+  :root { --ink:#16181d; --muted:#6b7280; --line:#e5e7eb; --accent:#4f46e5; --accent-soft:#eef2ff; --bg:#f7f7f9; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font:16px/1.45 system-ui, "Helvetica Neue", Arial, sans-serif; color:var(--ink); background:var(--bg); overflow:hidden; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:18px 32px; background:#fff; border-bottom:1px solid var(--line); }
+  .brand { font-weight:700; letter-spacing:-.01em; display:flex; align-items:center; gap:10px; }
+  .brand i { width:22px; height:22px; border-radius:7px; background:var(--accent); display:block; }
+  .today { color:var(--muted); font-size:14px; }
+  .btn { font:inherit; font-weight:600; font-size:14px; padding:9px 16px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--ink); cursor:pointer; }
+  .btn:hover { border-color:#c7c9d1; }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .btn.primary:hover { background:#4338ca; }
+  main { position:relative; height:calc(100% - 66px); }
+
+  #hero { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; transition:opacity .35s, transform .35s; }
+  #hero.gone { opacity:0; transform:translateY(-16px); pointer-events:none; }
+  #hero h1 { font-size:34px; letter-spacing:-.02em; }
+  #hero p { color:var(--muted); }
+  #ask { display:flex; gap:10px; width:640px; padding:10px; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 6px 24px rgba(20,20,40,.06); }
+  #ask input { flex:1; font:inherit; border:0; outline:0; padding:10px 12px; background:transparent; }
+
+  #board { position:absolute; top:0; bottom:0; left:50%; width:760px; margin-left:-380px; padding:30px 0; opacity:0; pointer-events:none; transition:opacity .35s; }
+  #board.on { opacity:1; pointer-events:auto; }
+  .status { display:flex; align-items:center; gap:12px; min-height:30px; color:var(--muted); }
+  .spinner { width:16px; height:16px; border-radius:50%; border:2px solid var(--line); border-top-color:var(--accent); animation:spin .8s linear infinite; }
+  .status.done .spinner { display:none; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .head { display:flex; align-items:end; justify-content:space-between; margin:14px 0 14px; }
+  .head h2 { font-size:26px; letter-spacing:-.015em; }
+  .meter { text-align:right; min-width:200px; }
+  .meter b { font-size:30px; letter-spacing:-.02em; }
+  .bar { height:8px; border-radius:99px; background:var(--line); overflow:hidden; margin-top:6px; }
+  .bar span { display:block; height:100%; width:0; background:var(--accent); transition:width .5s cubic-bezier(.2,.8,.2,1); }
+  ul { list-style:none; padding:0; display:grid; gap:10px; }
+  li.task { display:flex; align-items:center; gap:14px; padding:14px 18px; background:#fff; border:1px solid var(--line); border-radius:14px; animation:rise .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+  li.task .box { width:24px; height:24px; border-radius:8px; border:2px solid #c7c9d1; background:#fff; cursor:pointer; display:grid; place-items:center; transition:background .2s, border-color .2s; padding:0; }
+  li.task .box::after { content:""; width:10px; height:6px; border:2px solid #fff; border-top:0; border-right:0; transform:rotate(-45deg) scale(0); transition:transform .2s; margin-top:-2px; }
+  li.task[data-done="true"] .box { background:var(--accent); border-color:var(--accent); }
+  li.task[data-done="true"] .box::after { transform:rotate(-45deg) scale(1); }
+  li.task .text { flex:1; transition:color .3s; }
+  li.task[data-done="true"] .text { color:var(--muted); text-decoration:line-through; }
+  li.task .who { font-size:13px; color:var(--accent); background:var(--accent-soft); padding:3px 10px; border-radius:99px; }
+  .toolbar { margin-top:18px; display:flex; gap:10px; }
+
+  #drawer { position:absolute; top:0; right:0; bottom:0; width:380px; background:#fff; border-left:1px solid var(--line); box-shadow:-12px 0 40px rgba(20,20,40,.08); transform:translateX(100%); transition:transform .35s cubic-bezier(.2,.8,.2,1); display:flex; flex-direction:column; }
+  #drawer.open { transform:none; }
+  #drawer h3 { padding:20px 22px 12px; font-size:18px; }
+  #templates { overflow:auto; padding:6px 22px 22px; display:grid; gap:12px; }
+  .card { border:1px solid var(--line); border-radius:14px; padding:14px 16px; display:grid; gap:6px; }
+  .card strong { font-size:15px; }
+  .card span { color:var(--muted); font-size:14px; }
+  .card .btn { justify-self:start; margin-top:4px; }
+
+  #toast { position:absolute; left:50%; bottom:36px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:11px 18px; border-radius:12px; font-size:14px; opacity:0; pointer-events:none; }
+  #toast.show { animation:toast 2.4s ease both; }
+  @keyframes toast { 0% { opacity:0; transform:translate(-50%,10px); } 12%,80% { opacity:1; transform:translate(-50%,0); } 100% { opacity:0; transform:translate(-50%,6px); } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><i></i>Launchpad</div>
+  <div class="today" id="today"></div>
+  <button class="btn" id="open-templates">Templates</button>
+</header>
+<main>
+  <section id="hero">
+    <h1>What are we launching?</h1>
+    <p>Say it in plain words. Launchpad drafts the checklist.</p>
+    <form id="ask">
+      <input id="goal" placeholder="Describe your launch" autocomplete="off">
+      <button class="btn primary" type="submit">Plan it</button>
+    </form>
+  </section>
+
+  <section id="board">
+    <div class="status" id="status"><span class="spinner"></span><span id="status-text"></span></div>
+    <div class="head">
+      <h2 id="plan-title"></h2>
+      <div class="meter"><b id="percent">0%</b><div class="bar"><span id="fill"></span></div></div>
+    </div>
+    <ul id="tasks"></ul>
+  </section>
+
+  <aside id="drawer" aria-label="Templates">
+    <h3>Start from a template</h3>
+    <div id="templates"></div>
+  </aside>
+  <div id="toast" role="status"></div>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const fmt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  $("today").textContent = "Today, " + fmt.format(new Date());
+
+  const TEMPLATES = [
+    ["Product launch", "Announce, demo, and follow up"], ["Beta program", "Invite testers and collect notes"],
+    ["Pricing change", "Notify customers and update docs"], ["Webinar", "Slides, signups, and replay"],
+    ["Press release", "Draft, approve, and send"], ["Changelog post", "Summarize what shipped"],
+    ["Onboarding email", "Welcome series in three parts"], ["Store listing", "Screenshots and copy"],
+    ["Customer story", "Interview and publish"], ["Roadmap update", "Share what is next"],
+  ];
+  $("templates").innerHTML = TEMPLATES.map(([name, note], i) =>
+    `<div class="card"><strong>${name}</strong><span>${note}</span><button class="btn" data-template="${name}" aria-label="Use the ${name} template">Use</button></div>`).join("");
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  let tasks = [];
+  let shownPercent = 0;
+
+  function countTo(target) {
+    const from = shownPercent;
+    const start = performance.now();
+    const length = 500;
+    const frame = (now) => {
+      const t = Math.min(1, (now - start) / length);
+      shownPercent = Math.round(from + (target - from) * t);
+      $("percent").textContent = shownPercent + "%";
+      if (t < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+    $("fill").style.width = target + "%";
+  }
+
+  function refresh() {
+    const done = tasks.filter((t) => t.done).length;
+    countTo(tasks.length ? Math.round((done / tasks.length) * 100) : 0);
+  }
+
+  function addTask(task) {
+    const li = document.createElement("li");
+    li.className = "task";
+    li.dataset.done = String(Boolean(task.done));
+    li.innerHTML = `<button class="box" role="checkbox" aria-checked="${Boolean(task.done)}" aria-label="${task.text}"></button><span class="text">${task.text}</span><span class="who">${task.owner}</span>`;
+    li.querySelector(".box").addEventListener("click", () => {
+      task.done = !task.done;
+      li.dataset.done = String(task.done);
+      li.querySelector(".box").setAttribute("aria-checked", String(task.done));
+      refresh();
+    });
+    $("tasks").append(li);
+  }
+
+  async function type(text, node) {
+    for (let i = 1; i <= text.length; i++) { node.textContent = text.slice(0, i); await sleep(22); }
+  }
+
+  $("ask").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const goal = $("goal").value.trim();
+    if (!goal) return;
+    $("hero").classList.add("gone");
+    $("board").classList.add("on");
+    await type("Reading your goal...", $("status-text"));
+    const reply = fetch("/api/plan", { method: "POST", body: JSON.stringify({ goal }) }).then((r) => r.json());
+    await sleep(500);
+    await type("Drafting the checklist...", $("status-text"));
+    const plan = await reply;
+    $("plan-title").textContent = plan.title;
+    $("status").classList.add("done");
+    $("status-text").textContent = "Done. " + plan.tasks.length + " steps, ready to tick off.";
+    for (const task of plan.tasks) { tasks.push({ ...task, done: false }); addTask(tasks.at(-1)); await sleep(260); }
+  });
+
+  $("open-templates").addEventListener("click", () => $("drawer").classList.toggle("open"));
+
+  $("templates").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-template]");
+    if (!button) return;
+    const name = button.dataset.template;
+    tasks.push({ text: "Start from " + name, owner: "You", done: false });
+    addTask(tasks.at(-1));
+    refresh();
+    const toast = $("toast");
+    toast.textContent = name + " added to your plan";
+    toast.classList.remove("show");
+    void toast.offsetWidth;
+    toast.classList.add("show");
+    $("drawer").classList.remove("open");
+  });
+</script>
+</body>
+</html>
