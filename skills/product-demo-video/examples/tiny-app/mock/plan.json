@@ -1,0 +1,9 @@
+{
+  "title": "Launch the spring release",
+  "tasks": [
+    { "text": "Write the announcement post", "owner": "Sam" },
+    { "text": "Record a 60 second demo", "owner": "Jon" },
+    { "text": "Email the beta list", "owner": "Sam" },
+    { "text": "Update the pricing page", "owner": "Priya" }
+  ]
+}
