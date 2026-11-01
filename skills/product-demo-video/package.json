@@ -1,0 +1,18 @@
+{
+  "name": "product-demo-video",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Scripts behind the product-demo-video agent skill: frame-exact capture of a real web app, then camera, cursor, captions and sound added in post.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "doctor": "node scripts/run.mjs --doctor",
+    "example": "node scripts/run.mjs examples/tiny-app/demo.config.json",
+    "example:draft": "node scripts/run.mjs examples/tiny-app/demo.config.json --draft",
+    "test": "node scripts/run.mjs examples/tiny-app/demo.config.json --draft"
+  },
+  "dependencies": {
+    "playwright": "^1.58.0"
+  }
+}
